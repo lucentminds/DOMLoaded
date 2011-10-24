@@ -1,128 +1,49 @@
-(function( window ) {
+ * 08-29-2011
+ * Based on a couple of smart atricles I read. Will add them to comments when I find them again.
+ * ~~ Scott
+ 
+ (function( callback ){
+	var alreadyrunflag = false; //flag to indicate whether target function has already been run
+	var contentloadtag;
+	var safariInterval;
 
-	// Define a local copy of DOMLoaded
-	var DOMLoaded = function( callback ){
-		readyBound = false;
-		DOMLoaded.isReady = false;
-		if( typeof callback == 'function' ){
-			DOMReadyCallback = callback;
-		}
-		bindReady();
-	},
+	switch( true )
+	{
+		case /Safari/i.test(navigator.userAgent):
+			safariInterval = setInterval(function(){
 
-		// Use the correct document accordingly with window argument (sandbox)
-		document = window.document,
+			if(/loaded|complete/.test(document.readyState)){
+				clearInterval( safariInterval );
+				callback(); // call target function
+			}}, 10)
+			break;
 
-		readyBound = false,
+		case typeof document.addEventListener != 'undefined':
+			document.addEventListener( 'DOMContentLoaded' , function(){
+			alreadyrunflag = true;
+				callback(); // call target function
+			}, false );
+			break;
 
-		DOMReadyCallback = function(){},
+		case ( document.all && !window.opera ):
+			// We don't need to wait for the dom to load. We can use "defer" with these browsers.
+			document.write( '<script type="text/javascript" id="contentloadtag" defer="defer" src="javascript:void(0)">\x3C/script>' );
 
-		// The ready event handler
-		DOMContentLoaded;
-
-	// Is the DOM ready to be used? Set to true once it occurs.
-	DOMLoaded.isReady = false;
-
-		// Handle when the DOM is ready
-	var DOMReady = function() {
-		// Make sure that the DOM is not already loaded
-		if ( !DOMLoaded.isReady ) {
-			// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
-			if ( !document.body ) {
-				setTimeout( DOMReady, 13 );
-				return;
+			contentloadtag = document.getElementById( 'contentloadtag' );
+			contentloadtag.onreadystatechange = function() {
+			  if ( this.readyState == "complete" ) {
+				alreadyrunflag = true;
+				callback();
+			  }
 			}
 
-			// Remember that the DOM is ready
-			DOMLoaded.isReady = true;
-
-			// If there are functions bound, to execute
-				DOMReadyCallback();
-			// Execute all of them
-		}
-	}// /ready()
-
-	var bindReady = function() {
-		if ( readyBound ) {
-			return;
-		}
-
-		readyBound = true;
-
-		// Catch cases where DOMLoaded is called after the
-		// browser event has already occurred.
-		if ( document.readyState === "complete" ) {
-			DOMReady();
-		}
-
-		// Mozilla, Opera and webkit nightlies currently support this event
-		if ( document.addEventListener ) {
-			// Use the handy event callback
-			document.addEventListener( "DOMContentLoaded", DOMContentLoaded, false );
-
-			// A fallback to window.onload, that will always work
-			window.addEventListener( "load", DOMContentLoaded, false );
-
-		// If IE event model is used
-		}
-		else if ( document.attachEvent ) {
-			// ensure firing before onload,
-			// maybe late but safe also for iframes
-			document.attachEvent("onreadystatechange", DOMContentLoaded);
-
-			// A fallback to window.onload, that will always work
-			window.attachEvent( "onload", DOMContentLoaded );
-
-			// If IE and not a frame
-			// continually check to see if the document is ready
-			var toplevel = false;
-
-			try {
-				toplevel = window.frameElement == null;
-			} catch(e) {}
-
-			if ( document.documentElement.doScroll && toplevel ) {
-				doScrollCheck();
+		default:
+			window.onload = function() {
+				setTimeout( function(){
+					if (!alreadyrunflag){
+						callback();
+					}
+				}, 0);
 			}
-		}
-	};// /bindReady()
-
-	// The DOM ready check for Internet Explorer
-	var doScrollCheck = function() {
-		if ( DOMLoaded.isReady ) {
-			return;
-		}
-
-		try {
-			// If IE is used, use the trick by Diego Perini
-			// http://javascript.nwbox.com/IEContentLoaded/
-			document.documentElement.doScroll("left");
-		} catch( error ) {
-			setTimeout( doScrollCheck, 1 );
-			return;
-		}
-		// and execute any waiting functions
-		DOMReady();
-	}// /doScrollCheck()
-
-	// Cleanup functions for the document ready method
-	if ( document.addEventListener ) {
-		DOMContentLoaded = function() {
-			document.removeEventListener( "DOMContentLoaded", DOMContentLoaded, false );
-			DOMReady();
-		};
-
-	}
-	else if ( document.attachEvent ) {
-		DOMContentLoaded = function() {
-			// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
-			if ( document.readyState === "complete" ) {
-				document.detachEvent( "onreadystatechange", DOMContentLoaded );
-				DOMReady();
-			}
-		};
-	}// /if()
-
-	// Expose DOMLoaded to the global object
-	window.DOMLoaded = DOMLoaded;
-})(window);
+	}// /switch()
+}());
