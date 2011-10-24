@@ -1,8 +1,12 @@
+/**
  * 08-29-2011
  * Based on a couple of smart atricles I read. Will add them to comments when I find them again.
  * ~~ Scott
- 
- (function( callback ){
+ */
+(function(window){
+
+
+ var DOMLoaded = function( callback ) {
 	var alreadyrunflag = false; //flag to indicate whether target function has already been run
 	var contentloadtag;
 	var safariInterval;
@@ -31,10 +35,10 @@
 
 			contentloadtag = document.getElementById( 'contentloadtag' );
 			contentloadtag.onreadystatechange = function() {
-			  if ( this.readyState == "complete" ) {
-				alreadyrunflag = true;
-				callback();
-			  }
+				if ( contentloadtag.readyState == "complete" ) {
+				  alreadyrunflag = true;
+				  callback();
+				}
 			}
 
 		default:
@@ -46,4 +50,8 @@
 				}, 0);
 			}
 	}// /switch()
-}());
+};// /DOMLoaded()
+
+window['DOMLoaded'] = DOMLoaded;
+
+}(window));
